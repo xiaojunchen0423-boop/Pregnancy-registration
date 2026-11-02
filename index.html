@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孕期检查登记 · 筠筠</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --line:#e5e9f2; --txt:#2b3446; --sub:#7a8699;
+    --blue:#3b6fe0; --blue-soft:#eaf0fd; --amber:#b45309; --amber-bg:#fef3c7;
+    --green:#15803d; --green-bg:#dcfce7; --red:#b91c1c; --red-bg:#fee2e2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:var(--bg); color:var(--txt); font-size:14px; line-height:1.6;}
+  .wrap{max-width:1080px; margin:0 auto; padding:20px 16px 60px;}
+  header.top{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:16px;}
+  header.top h1{font-size:22px; color:#1f3864;}
+  header.top .who{color:var(--sub);}
+  .disclaim{background:var(--blue-soft); border:1px solid #d6e0f8; border-radius:10px; padding:8px 14px; color:#44506a; font-size:12.5px; margin-bottom:16px;}
+  nav.tabs{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+  nav.tabs button{border:1px solid var(--line); background:var(--card); color:var(--txt); padding:8px 18px; border-radius:999px; cursor:pointer; font-size:14px; font-family:inherit;}
+  nav.tabs button.on{background:var(--blue); border-color:var(--blue); color:#fff; font-weight:600;}
+  section{display:none;}
+  section.on{display:block;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:14px;}
+  .card h2{font-size:16px; margin-bottom:10px; color:#1f3864;}
+  .card h3{font-size:14px; margin:12px 0 6px;}
+  /* 时间线 */
+  .visit{position:relative; padding:0 0 18px 26px; border-left:2px solid #d6e0f8; margin-left:8px;}
+  .visit:last-child{border-left-color:transparent; padding-bottom:2px;}
+  .visit::before{content:""; position:absolute; left:-8px; top:2px; width:14px; height:14px; border-radius:50%; background:var(--blue); border:3px solid var(--blue-soft);}
+  .visit .vhead{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;}
+  .visit .vdate{font-weight:700; font-size:15px; color:var(--blue);}
+  .visit .vorg{color:var(--sub); font-size:13px;}
+  .visit .vga{background:var(--green-bg); color:var(--green); border-radius:999px; padding:1px 10px; font-size:12px;}
+  .visit ul{margin:6px 0 4px 18px;}
+  .visit li{margin:2px 0;}
+  .vnote{font-size:13px; color:#44506a; background:#f6f8fd; border-radius:8px; padding:6px 10px; margin-top:6px;}
+  /* 表格 */
+  table{width:100%; border-collapse:collapse; background:#fff;}
+  th,td{border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; font-size:13px;}
+  th{background:var(--blue-soft); color:#1f3864; white-space:nowrap;}
+  tr.cat td{background:#f0f4fb; font-weight:700; color:#1f3864;}
+  .tag{display:inline-block; border-radius:6px; padding:0 8px; font-size:12px; font-weight:600;}
+  .tag.ok{background:var(--green-bg); color:var(--green);}
+  .tag.warn{background:var(--amber-bg); color:var(--amber);}
+  .tag.down{background:var(--red-bg); color:var(--red);}
+  .muted{color:var(--sub); font-size:12px;}
+  .toolbar{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center;}
+  .toolbar input[type=text], .toolbar select{padding:6px 10px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:13px;}
+  /* 图表 */
+  .charts{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px;}
+  .chart-card svg{width:100%; height:auto; display:block;}
+  .axis{stroke:#c9d3e6; stroke-width:1;}
+  .blabel{font-size:11px; fill:#44506a;}
+  .btext{font-size:11px; fill:#7a8699;}
+  .bar-hcg{fill:#3b6fe0;} .bar-e2{fill:#7c5cd6;} .bar-p{fill:#e08a3b;}
+  .legend{display:flex; gap:16px; font-size:12px; color:var(--sub); margin-top:6px; flex-wrap:wrap;}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px;}
+  /* 表单 */
+  .form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px;}
+  .form-grid label{font-size:12.5px; color:var(--sub); display:block; margin-bottom:3px;}
+  .form-grid input, .form-grid select, .form-grid textarea{width:100%; padding:7px 10px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:13px;}
+  .form-grid .full{grid-column:1/-1;}
+  .btn{padding:8px 20px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; font-size:14px;}
+  .btn.primary{background:var(--blue); color:#fff; font-weight:600;}
+  .btn.ghost{background:#fff; border:1px solid var(--line); color:var(--txt);}
+  .btn.danger{background:#fff; border:1px solid #f3c1c1; color:var(--red);}
+  .btn:hover{opacity:.92;}
+  .hint{font-size:12px; color:var(--sub); margin-top:8px;}
+  ul.help{margin-left:18px;}
+  ul.help li{margin:3px 0;}
+  footer{margin-top:24px; font-size:12px; color:var(--sub);}
+  @media print{
+    nav.tabs,.toolbar,.btn,footer .noprint{display:none !important;}
+    section{display:block !important;}
+    body{background:#fff;}
+    .card{border:none; page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>孕期检查登记</h1>
+    <span class="who">筠筠 · 数据截至 11.01（3 次检查 / 9 份报告）</span>
+  </header>
+
+  <div class="disclaim">本工具仅做检查结果的记录与整理，数值均抄自报告原件；不做医学解读，阳性标注与孕周以产检医生解读为准。数值请自行核对原件。</div>
+
+  <nav class="tabs">
+    <button class="on" data-tab="overview">检查总览</button>
+    <button data-tab="detail">登记明细</button>
+    <button data-tab="trend">趋势对比</button>
+    <button data-tab="add">新增登记</button>
+    <button data-tab="help">使用说明</button>
+  </nav>
+
+  <section id="tab-overview" class="on"></section>
+  <section id="tab-detail"></section>
+  <section id="tab-trend"></section>
+  <section id="tab-add">
+    <div class="card">
+      <h2>新增一次检查</h2>
+      <div class="form-grid">
+        <div><label>检查日期（如 11.15）</label><input id="f_date" placeholder="11.15"></div>
+        <div><label>医院 / 机构</label><input id="f_org" placeholder="某某医院"></div>
+        <div><label>报告上的孕周（如 9W，可留空）</label><input id="f_ga" placeholder="如 9W"></div>
+        <div class="full"><label>检查项目（如 血常规、彩超、早孕三项）</label><input id="f_item" placeholder="检查项目名称"></div>
+        <div class="full"><label>关键结果（逐条写，如 白细胞 5.94 ×10^9/L）</label><textarea id="f_result" rows="3" placeholder="每行一条：项目 结果 单位"></textarea></div>
+        <div class="full"><label>医生意见 / 报告标注（可留空）</label><textarea id="f_note" rows="2" placeholder="报告提示或医生交代"></textarea></div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="addVisit()">保存这条登记</button>
+        <button class="btn ghost" onclick="exportJSON()">导出全部数据（JSON 备份）</button>
+        <label class="btn ghost" style="margin:0;">导入备份<input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(this)"></label>
+      </div>
+      <div class="hint">保存后数据存在本机浏览器（localStorage），不联网、不上传。换电脑或清理浏览器前，请先用「导出全部数据」备份。</div>
+    </div>
+    <div class="card">
+      <h2>手工登记的记录</h2>
+      <div id="extraList"></div>
+    </div>
+  </section>
+  <section id="tab-help">
+    <div class="card">
+      <h2>以后每次检查怎么用</h2>
+      <ul class="help">
+        <li>报告照片/PDF 仍按日期新建文件夹放进 <b>C:\Users\372020\Desktop\筠筠\孕期</b>（如「11.15（某某医院）」），跟 AI 说一声即可登记进本工具。</li>
+        <li>临时想自己记一笔：用「新增登记」页填写保存，记录会同时出现在「检查总览」「登记明细」里。</li>
+        <li>本工具完全离线可用，双击打开即可；数据保存在本机浏览器里。</li>
+        <li>打印：浏览器里按 Ctrl+P 可打印为纸质版（自动隐藏按钮）。</li>
+        <li>「趋势对比」页的箭头/换算只是数值层面的算术关系，不代表医学结论。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>数据来源</h2>
+      <p class="muted">10.17 白云区妇幼保健院（广医三院白云分院）：艾梅乙检查、发光验血（β-HCG、孕酮）<br>
+      10.24 景泰街社区卫生服务中心：早孕三项、甲功三项、优生五项、阴道彩超<br>
+      11.01 景泰街社区卫生服务中心：早孕三项、阴道彩超、血常规+血型、肝功、肾功、血糖、尿常规</p>
+    </div>
+  </section>
+
+  <footer><span class="noprint">孕期检查登记工具 · 离线使用 · 最后更新 11.02</span></footer>
+</div>
+
+<script>
+/* ================= 内置数据（抄自报告原件） ================= */
+const REPORTS = [
+  { date:"10.17", org:"白云区妇幼保健院（广医三院白云分院）", ga:"", note:"诊断：确认妊娠",
+    sum:[
+      "本次是最早确认妊娠的一次检查：β-HCG 1846.0 IU/L，对照报告所附孕周参考表（孕4周10.2~708、孕5周217~7140等），数值提示怀孕时间还早。",
+      "孕酮 98.94 nmol/L，按通用换算约合 31.1 ng/mL，在报告所附孕早期参考（36.6~150 nmol/L）范围内。",
+      "艾梅乙 8 项筛查全部阴性。",
+    ],
+    items:[
+      {cat:"艾梅乙筛查", name:"梅毒螺旋体抗体（TP-Ab）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"乙肝表面抗体（HBsAb）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"乙肝表面抗原（HBsAg）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"乙肝e抗原（HBeAg）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"乙肝e抗体（HBeAb）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"乙肝c抗体（HBcAb）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"丙肝病毒抗体（HCV-IgG）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"艾梅乙筛查", name:"艾滋病毒抗体（HIV-Ab）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"发光验血", name:"β-人绒毛膜促性腺激素（β-HCG）", r:"1846.0", u:"IU/L", ref:"（报告附孕周参考）", mark:""},
+      {cat:"发光验血", name:"孕酮", r:"98.94", u:"nmol/L", ref:"（报告附孕早期参考 36.6~150）", mark:""},
+    ]},
+  { date:"10.24", org:"景泰街社区卫生服务中心", ga:"约4W+（彩超）", note:"宫内妊娠大小约4W+；右侧卵巢内混合回声考虑为黄体；以上请结合临床",
+    sum:[
+      "距上次 7 天，HCG 从 1846 升至 29718.53，约 16 倍；早孕期 HCG 通常每 48~72 小时明显上升（通用参考），增长节奏与之相符，具体以医生判断为准。",
+      "孕酮 37.29 ng/mL、雌二醇 718 pg/mL，均有对应登记。",
+      "甲功三项在普通参考范围内，也落在报告附的妊娠早期特异参考区间内。",
+      "优生五项：IgM 五项全阴性；IgG 中单疱病毒I型、巨细胞病毒两项阳性（★），阳性含义请以医生解读为准。",
+      "彩超孕囊 14×12mm、只见卵黄囊未见胚芽，报告孕约 4W+；按通用参考，胚芽多在孕 5 周左右起才逐渐可见，这个孕周看不到胚芽是常见情况。",
+      "右侧卵巢混合回声考虑为黄体——医生已说明（11.02转述）会自动消失，不用担心。",
+    ],
+    items:[
+      {cat:"早孕三项", name:"人绒毛膜促性腺激素（HCG）", r:"29718.53", u:"IU/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"早孕三项", name:"孕酮", r:"37.29", u:"ng/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"早孕三项", name:"雌二醇", r:"718", u:"pg/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"甲功三项", name:"三碘甲状腺原氨酸（T3）", r:"1.59", u:"nmol/L", ref:"1.21~3.01", mark:""},
+      {cat:"甲功三项", name:"甲状腺素（T4）", r:"140.91", u:"nmol/L", ref:"71.31~165.06", mark:""},
+      {cat:"甲功三项", name:"促甲状腺激素（TSH）", r:"1.035", u:"mIU/L", ref:"0.270~4.319", mark:""},
+      {cat:"甲功备注", name:"妊娠早期特异参考区间", r:"—", u:"—", ref:"T3 1.60~3.59；T4 92.73~194.53；TSH 0.091~4.512", mark:"报告原文附表"},
+      {cat:"优生五项 IgM", name:"弓形虫（TOX-IgM）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgM", name:"巨细胞病毒（CMV-IgM）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgM", name:"单疱病毒I型（HSV-I IgM）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgM", name:"单疱病毒II型（HSV-II IgM）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgM", name:"风疹病毒（RV-IgM）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgG", name:"单疱病毒I型（HSV-I IgG）", r:"阳性(+)", u:"—", ref:"阴性(-)", mark:"★"},
+      {cat:"优生五项 IgG", name:"单疱病毒II型（HSV-II IgG）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgG", name:"弓形虫（TOX-IgG）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"优生五项 IgG", name:"巨细胞病毒（CMV-IgG）", r:"阳性(+)", u:"—", ref:"阴性(-)", mark:"★"},
+      {cat:"优生五项 IgG", name:"风疹病毒（RV-IgG）", r:"阴性", u:"—", ref:"阴性(-)", mark:""},
+      {cat:"阴道彩超", name:"孕囊大小", r:"约14×12mm", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"卵黄囊", r:"可见", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"胚芽", r:"未见明显胚芽回声", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"右侧卵巢区", r:"混合回声区约15×13mm，考虑为黄体", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"子宫直肠窝", r:"未见明显液性暗区", u:"—", ref:"—", mark:""},
+    ]},
+  { date:"11.01", org:"景泰街社区卫生服务中心", ga:"约7W（彩超）", note:"宫内早妊娠，胚胎存活，孕约7W；建议定期复查及孕11周~13周+6天期间行NT检查",
+    sum:[
+      "距上次 8 天，HCG 升至 103029.67（约 3.5 倍）；通用参考：孕 8~10 周 HCG 增速逐渐放缓并接近高峰，增速变慢属常见轨迹。",
+      "孕酮 35.80 ng/mL，与上次（37.29）基本持平；雌二醇升至 1490 pg/mL。",
+      "彩超孕囊 38×19mm、胚芽长 5mm、原始心管搏动可见，报告孕约 7W、胚胎存活；右侧卵巢区未再提及（黄体情况医生已说明）。",
+      "血常规除嗜碱性粒细胞百分率、异常淋巴细胞绝对值低于所印参考（报告均未标异常箭头）外，其余在参考范围；血红蛋白 125 g/L。",
+      "肝功、肾功、血糖（4.30 mmol/L）、尿常规（仅维生素C ±）基本均在报告参考范围内；血型 B 型、RhD 阳性。",
+      "下一步（医生建议）：孕 11 周~13 周+6 天行 NT 检查。",
+    ],
+    items:[
+      {cat:"早孕三项", name:"人绒毛膜促性腺激素（HCG）", r:"103029.67", u:"IU/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"早孕三项", name:"孕酮", r:"35.80", u:"ng/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"早孕三项", name:"雌二醇", r:"1490", u:"pg/mL", ref:"（报告附孕周参考）", mark:""},
+      {cat:"血型", name:"ABO血型", r:"B型", u:"—", ref:"—", mark:""},
+      {cat:"血型", name:"RhD血型", r:"阳性", u:"—", ref:"—", mark:""},
+      {cat:"血常规", name:"白细胞", r:"5.94", u:"10^9/L", ref:"4.00~10.00", mark:""},
+      {cat:"血常规", name:"中性粒细胞百分率", r:"59.50", u:"%", ref:"30.0~70.0", mark:""},
+      {cat:"血常规", name:"巨大不成熟细胞百分率", r:"0.0", u:"%", ref:"0.0~2.5", mark:""},
+      {cat:"血常规", name:"淋巴细胞百分率", r:"31.90", u:"%", ref:"20.00~40.00", mark:""},
+      {cat:"血常规", name:"单核细胞百分率", r:"5.90", u:"%", ref:"3.00~12.00", mark:""},
+      {cat:"血常规", name:"异常淋巴细胞百分率", r:"0.3", u:"%", ref:"0.0~2.5", mark:""},
+      {cat:"血常规", name:"嗜酸性粒细胞百分率", r:"2.40", u:"%", ref:"0.50~5.00", mark:""},
+      {cat:"血常规", name:"嗜碱性粒细胞百分率", r:"0.30", u:"%", ref:"0.50~1.00", mark:"低于所印参考，报告未标异常箭头"},
+      {cat:"血常规", name:"中性粒细胞数", r:"3.54", u:"10^9/L", ref:"2.0~7.0", mark:""},
+      {cat:"血常规", name:"淋巴细胞数", r:"1.89", u:"10^9/L", ref:"0.80~4.00", mark:""},
+      {cat:"血常规", name:"单核细胞数", r:"0.35", u:"10^9/L", ref:"0.12~1.20", mark:""},
+      {cat:"血常规", name:"嗜酸性粒细胞数", r:"0.14", u:"10^9/L", ref:"0.02~0.50", mark:""},
+      {cat:"血常规", name:"嗜碱性粒细胞数", r:"0.02", u:"10^9/L", ref:"0.00~0.10", mark:""},
+      {cat:"血常规", name:"巨大不成熟细胞绝对值", r:"0.0", u:"10^9/L", ref:"0.0~0.2", mark:""},
+      {cat:"血常规", name:"异常淋巴细胞绝对值", r:"0.18", u:"10^9/L", ref:"3.50~5.50", mark:"低于所印参考，报告未标异常箭头；所印参考疑为淋巴细胞数参考"},
+      {cat:"血常规", name:"红细胞压积", r:"37.40", u:"%", ref:"37~47", mark:""},
+      {cat:"血常规", name:"红细胞平均体积", r:"89.6", u:"fL", ref:"82.0~100.0", mark:""},
+      {cat:"血常规", name:"红细胞平均血红蛋白量", r:"30.0", u:"pg", ref:"28.0~34.0", mark:""},
+      {cat:"血常规", name:"红细胞平均血红蛋白浓度", r:"334", u:"g/L", ref:"320~360", mark:""},
+      {cat:"血常规", name:"红细胞分布宽度-CV", r:"14", u:"%", ref:"11~16", mark:""},
+      {cat:"血常规", name:"有核红细胞百分率", r:"0.00", u:"/100WBC", ref:"0.00~999.99", mark:""},
+      {cat:"血常规", name:"有核红细胞", r:"0.00", u:"10^9/L", ref:"0.00~999.99", mark:""},
+      {cat:"血常规", name:"红细胞分布宽度-SD", r:"45", u:"fL", ref:"35~56", mark:""},
+      {cat:"血常规", name:"血红蛋白", r:"125.00", u:"g/L", ref:"110.00~150.00", mark:""},
+      {cat:"血常规", name:"血小板", r:"248.00", u:"10^9/L", ref:"100.00~300.00", mark:""},
+      {cat:"血常规", name:"血小板平均体积", r:"8.7", u:"fL", ref:"6.5~12.0", mark:""},
+      {cat:"血常规", name:"血小板分布宽度", r:"9.1", u:"fL", ref:"9.0~17.0", mark:""},
+      {cat:"血常规", name:"血小板压积", r:"0.217", u:"%", ref:"0.108~0.282", mark:""},
+      {cat:"血常规", name:"大血小板数目", r:"43.000", u:"10^9/L", ref:"30.000~90.000", mark:""},
+      {cat:"肝功", name:"丙氨酸氨基转移酶（ALT）", r:"21.4", u:"U/L", ref:"0~40", mark:""},
+      {cat:"肝功", name:"天门冬氨酸氨基转移酶（AST）", r:"16.2", u:"U/L", ref:"0~34.0", mark:""},
+      {cat:"肝功", name:"γ-谷氨酰基转移酶", r:"14.5", u:"U/L", ref:"7.0~30.0", mark:""},
+      {cat:"肝功", name:"总胆红素", r:"7.5", u:"μmol/L", ref:"1.7~21.0", mark:""},
+      {cat:"肝功", name:"直接胆红素", r:"1.80", u:"μmol/L", ref:"0.00~6.84", mark:""},
+      {cat:"肝功", name:"间接胆红素", r:"5.7", u:"μmol/L", ref:"2.0~17.0", mark:""},
+      {cat:"肝功", name:"总蛋白", r:"66.0", u:"g/L", ref:"66.0~83.0", mark:""},
+      {cat:"肝功", name:"白蛋白", r:"41.1", u:"g/L", ref:"35.0~53.0", mark:""},
+      {cat:"肝功", name:"球蛋白", r:"24.9", u:"g/L", ref:"20~40", mark:""},
+      {cat:"肝功", name:"白蛋白/球蛋白", r:"1.7", u:"—", ref:"1.2~2.5", mark:""},
+      {cat:"肝功", name:"碱性磷酸酶", r:"40.00", u:"U/L", ref:"40.00~150.00", mark:""},
+      {cat:"肾功", name:"尿素", r:"4.70", u:"mmol/L", ref:"2.82~8.20", mark:""},
+      {cat:"肾功", name:"肌酐", r:"64.8", u:"μmol/L", ref:"45.0~84.0", mark:""},
+      {cat:"肾功", name:"尿酸", r:"208.3", u:"μmol/L", ref:"150.0~360.0", mark:""},
+      {cat:"血糖", name:"葡萄糖", r:"4.30", u:"mmol/L", ref:"3.89~6.11", mark:""},
+      {cat:"尿常规", name:"尿白细胞", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"亚硝酸盐", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"尿胆原", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"尿胆红素", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"维生素C", r:"±", u:"—", ref:"阴性", mark:"报告标注 ±"},
+      {cat:"尿常规", name:"尿蛋白质", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"尿隐血", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"尿酸碱度", r:"6.0", u:"—", ref:"5.0~8.0", mark:""},
+      {cat:"尿常规", name:"尿比重", r:"1.025", u:"—", ref:"1.0100~1.0300", mark:""},
+      {cat:"尿常规", name:"尿葡萄糖", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"尿常规", name:"尿酮体", r:"阴性(-)", u:"—", ref:"阴性", mark:""},
+      {cat:"阴道彩超", name:"孕囊大小", r:"约38×19mm", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"右侧卵巢区", r:"报告未再提及", u:"—", ref:"—", mark:"医生说明（11.02转述）：黄体会自动消失，目前看不见就是没有了，不用担心"},
+      {cat:"阴道彩超", name:"胚芽", r:"胚芽长5mm", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"原始心管搏动", r:"可见", u:"—", ref:"—", mark:""},
+      {cat:"阴道彩超", name:"子宫直肠窝", r:"未见明显液性暗区", u:"—", ref:"—", mark:""},
+    ]},
+];
+
+/* ================= 手工登记（localStorage） ================= */
+const LS_KEY = "preg_registry_extra_v1";
+function loadExtra(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; } }
+function saveExtra(a){ localStorage.setItem(LS_KEY, JSON.stringify(a)); }
+let EXTRA = loadExtra();
+
+function allVisits(){
+  const extras = EXTRA.map(v => ({...v, manual:true}));
+  return [...REPORTS, ...extras].sort((a,b)=> parseDate(a.date)-parseDate(b.date));
+}
+function parseDate(d){ // "10.17" -> 1017；兼容 "2026.11.15"
+  const s = String(d).replace(/^\d{4}\./, "");
+  const m = s.match(/(\d+)\.(\d+)/);
+  return m ? (parseInt(m[1])*100 + parseInt(m[2])) : 0;
+}
+
+/* ================= 标签 ================= */
+function flagTag(item){
+  if(!item.mark) return "";
+  const t = item.mark;
+  if(t.includes("★") || t.includes("阳性")) return '<span class="tag warn">'+t+'</span>';
+  if(t.includes("±")) return '<span class="tag warn">'+t+'</span>';
+  if(t.includes("低于") || t.includes("高于") || t.includes("↑") || t.includes("↓")) return '<span class="tag down">'+t+'</span>';
+  return '<span class="tag ok">'+t+'</span>';
+}
+
+/* ================= Tab 1 总览 ================= */
+function renderOverview(){
+  const box = document.getElementById("tab-overview");
+  const vs = allVisits();
+  let h = '<div class="card"><h2>检查时间线（按日期）</h2>';
+  vs.forEach(v=>{
+    const cats = [...new Set(v.items.map(i=>i.cat))];
+    h += '<div class="visit"><div class="vhead">'+
+         '<span class="vdate">'+v.date+(v.manual?'（手工登记）':'')+'</span>'+
+         '<span class="vorg">'+v.org+'</span>'+
+         (v.ga?'<span class="vga">'+v.ga+'</span>':'')+
+         '</div><ul>';
+    cats.forEach(c=>{
+      const its = v.items.filter(i=>i.cat===c);
+      const main = its.filter(i=>i.mark).slice(0,3).map(i=>i.name+' '+i.r).join("；");
+      h += '<li><b>'+c+'</b>（'+its.length+'项）'+(main?'：<span class="tag warn">有标注：'+main+'</span>':'')+'</li>';
+    });
+    h += '</ul>';
+    if(v.note) h += '<div class="vnote">报告提示 / 医生意见：'+v.note+'</div>';
+    if(v.sum) h += '<div class="vnote" style="background:#eef7ee; border-color:#cfe5cf;"><b>AI 总结</b><span class="muted">（结合报告数值与通用参考整理，具体以医生判断为准）</span><ul style="margin:4px 0 2px 18px;">'+v.sum.map(s=>'<li>'+s+'</li>').join("")+'</ul></div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<div class="card"><h2>重点变化速览</h2><ul class="help">'+
+       '<li>β-HCG：1846.0（10.17）→ 29718.53（10.24）→ 103029.67 IU/mL（11.01），数值持续上升。</li>'+
+       '<li>孕酮：98.94 nmol/L（10.17，按 1 ng/mL≈3.18 nmol/L 换算约 31.1 ng/mL）→ 37.29 → 35.80 ng/mL；换算后三次可比，后两次基本持平。</li>'+
+       '<li>彩超：10.24 孕囊14×12mm、仅卵黄囊 → 11.01 孕囊38×19mm、胚芽长5mm、原始心管搏动可见；报告孕周 4W+ → 约7W。右侧卵巢"考虑黄体"的混合回声 11.01 未再见；医生说明（11.02转述）：黄体会自动消失，看不见就是没有了，不用担心。</li>'+
+       '<li>优生五项 IgG：单疱病毒I型、巨细胞病毒 阳性(★)；风疹病毒、单疱病毒II型、弓形虫 阴性；IgM 五项均阴性。</li>'+
+       '<li>11.01 血常规/肝肾功能/血糖/尿常规：除嗜碱性粒细胞百分率、异常淋巴细胞绝对值低于所印参考（报告均未标异常箭头）与尿维生素C ± 外，其余均在报告参考范围内。</li>'+
+       '<li>孕周口径：末次月经第一天 9.18（口述）；11.01 彩超约7W，医生确认数据对得上但无法保证完全准确，预产期可能前后各推 15 天。</li>'+
+       '<li>医生建议（11.01 彩超）：孕11周~13周+6天行 NT 检查。</li></ul></div>';
+  box.innerHTML = h;
+}
+
+/* ================= Tab 2 明细 ================= */
+function renderDetail(){
+  const box = document.getElementById("tab-detail");
+  let h = '<div class="card"><h2>登记明细（逐项）</h2>'+
+    '<div class="toolbar">'+
+    '<input type="text" id="q" placeholder="搜索项目名 / 结果…" oninput="filterTable()">'+
+    '<select id="fDate" onchange="filterTable()"><option value="">全部日期</option>'+
+    allVisits().map(v=>'<option value="'+v.date+'">'+v.date+(v.manual?'（手工）':'（'+v.org.slice(0,10)+'…）')+'</option>').join("")+
+    '</select><span class="muted" id="cnt"></span></div>'+
+    '<div style="overflow-x:auto;" id="tableBox"></div></div>';
+  box.innerHTML = h;
+  buildTable();
+}
+function buildTable(fq, fdate){
+  const vs = allVisits();
+  let rows = "";
+  let n = 0;
+  vs.forEach(v=>{
+    if(fdate && v.date!==fdate) return;
+    const cats = [...new Set(v.items.map(i=>i.cat))];
+    let open = false;
+    cats.forEach(c=>{
+      v.items.filter(i=>i.cat===c).forEach(i=>{
+        if(fq && !(i.name+i.r+(i.mark||"")).includes(fq)) return;
+        if(!open){ rows += '<tr><td colspan="5" style="background:#fff;border-bottom:none;padding-bottom:0;"><b style="color:#1f3864;">'+v.date+' · '+v.org+'</b> '+(v.ga?'<span class="tag ok">'+v.ga+'</span>':'')+(v.manual?' <span class="tag warn">手工登记</span>':'')+'</td></tr>'; open=true; }
+        rows += '<tr><td>'+c+'</td><td>'+i.name+'</td><td><b>'+i.r+'</b>'+(i.u!=="—"?' <span class="muted">'+i.u+'</span>':'')+'</td><td>'+i.ref+'</td><td>'+(i.mark?flagTag(i):'<span class="tag ok">—</span>')+'</td></tr>';
+        n++;
+      });
+      open = false;
+    });
+  });
+  document.getElementById("tableBox").innerHTML =
+    '<table><thead><tr><th>类别</th><th>项目</th><th>结果</th><th>报告参考</th><th>标注</th></tr></thead><tbody>'+
+    (rows || '<tr><td colspan="5" class="muted">没有匹配的记录</td></tr>')+'</tbody></table>';
+  document.getElementById("cnt").textContent = "共 "+n+" 条";
+}
+function filterTable(){
+  buildTable(document.getElementById("q").value.trim(), document.getElementById("fDate").value);
+}
+
+/* ================= Tab 3 趋势对比 ================= */
+function barChart(id, title, labels, values, unit, cls, note){
+  const W=300, H=190, padL=8, padB=44, padT=26;
+  const max = Math.max(...values);
+  const bw = W/labels.length*0.5;
+  let s = '<svg viewBox="0 0 '+W+' '+H+'" role="img">';
+  s += '<text x="'+padL+'" y="14" class="blabel" font-weight="bold" font-size="12" fill="#1f3864">'+title+'</text>';
+  labels.forEach((lb,i)=>{
+    const x = W/labels.length*i + (W/labels.length-bw)/2;
+    const bh = (H-padB-padT) * values[i]/max;
+    const y = H-padB-bh;
+    s += '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="4" class="'+cls+'"></rect>';
+    s += '<text x="'+(x+bw/2)+'" y="'+(y-5)+'" text-anchor="middle" class="blabel">'+fmtVal(values[i])+'</text>';
+    s += '<text x="'+(x+bw/2)+'" y="'+(H-padB+16)+'" text-anchor="middle" class="btext">'+lb+'</text>';
+  });
+  s += '<line x1="4" y1="'+(H-padB)+'" x2="'+(W-4)+'" y2="'+(H-padB)+'" class="axis"/>';
+  s += '</svg>';
+  return '<div class="card chart-card"><h3>'+title+' <span class="muted">（'+unit+'）</span></h3>'+s+'<div class="muted">'+note+'</div></div>';
+}
+function fmtVal(v){ return v>=10000 ? (v/10000).toFixed(1).replace(/\.0$/,"")+"万" : v; }
+
+function renderTrend(){
+  const box = document.getElementById("tab-trend");
+  const labels = ["10.17","10.24","11.01"];
+  let h = '<div class="charts">';
+  h += barChart("c1","β-HCG", labels, [1846.0, 29718.53, 103029.67], "IU/L、IU/mL（单位不同，看趋势）", "bar-hcg", "10.17报告单位为 IU/L，后两次为 IU/mL；柱高按数值绘制。");
+  h += barChart("c2","雌二醇", ["10.24","11.01"], [718, 1490], "pg/mL", "bar-e2", "10.17 未查此项。");
+  h += barChart("c3","孕酮", ["10.17*","10.24","11.01"], [31.1, 37.29, 35.80], "ng/mL", "bar-p", "*10.17 原始值 98.94 nmol/L，按 1 ng/mL≈3.18 nmol/L 换算约 31.1 ng/mL（AI换算，仅供参考），其余两次为报告原始值。");
+  h += '</div>';
+  h += '<div class="card"><h2>两次彩超对比</h2><div style="overflow-x:auto;"><table><thead><tr><th>项目</th><th>10.24</th><th>11.01</th></tr></thead><tbody>'+
+    [["孕囊大小","约14×12mm","约38×19mm"],
+     ["卵黄囊","可见","可见"],
+     ["胚芽","未见明显胚芽回声","胚芽长5mm"],
+     ["原始心管搏动","未见/报告未提及","可见"],
+     ["子宫位置","后位，体积饱满","前位，体积增大"],
+     ["右侧卵巢区","混合回声区约15×13mm，考虑为黄体","报告未再提及；医生说明（11.02转述）：黄体会自动消失，看不见就是没有了，不用担心"],
+     ["报告孕周","宫内妊娠大小约4W+","宫内早妊娠，胚胎存活，孕约7W"],
+     ["医生建议","以上请结合临床","建议定期复查及孕11周~13周+6天期间行NT检查"]]
+    .map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td></tr>").join("")+
+    '</tbody></table></div><div class="hint">超声描述均抄自报告原文。</div></div>';
+  h += milestoneCard();
+  box.innerHTML = h;
+}
+
+/* 里程碑：以 11.01 彩超"孕约7W"为锚点（2026-11-01 = 7周0天）推算日期 */
+function wdate(w, d){
+  const base = new Date(2026, 10, 1);
+  base.setDate(base.getDate() + (w-7)*7 + (d||0));
+  return (base.getMonth()+1)+"月"+base.getDate()+"日";
+}
+function milestoneCard(){
+  const ms = [
+    ["11周~13+6", [11,0], [13,6], "NT 超声（胎儿颈项透明层）——11.01 报告里医生明确建议", "医生建议"],
+    ["12周~22周", [12,0], [22,0], "无创DNA（NIPT）可做窗口（部分医院12周起抽血）", "通用参考"],
+    ["15~20周", [15,0], [20,0], "中期唐氏筛查（血清学），与无创二选一或按医生安排", "通用参考"],
+    ["20~24周", [20,0], [24,0], "系统超声（大排畸），常安排在22~24周", "通用参考"],
+    ["24~28周", [24,0], [28,0], "OGTT 糖耐量试验；孕28周起一般每2周产检一次", "通用参考"],
+    ["28~32周", [28,0], [32,0], "小排畸/复查B超（看发育、胎位）", "通用参考"],
+    ["34周起", [34,0], null, "胎心监护（部分医院32~34周起，按医院安排）", "通用参考"],
+    ["36周起", [36,0], null, "一般每周产检一次，评估胎位与分娩方式", "通用参考"],
+    ["37周", [37,0], null, "足月；此后随时关注临产信号", "通用参考"],
+    ["40周", [40,0], null, "预产期：按11.01彩超约7W推算约2027-06-20；按末次月经9.18通用公式约2027-06-25；医生提示可能前后各15天，大致在2027年6月上旬~7月上旬", "AI推算"],
+  ];
+  let rows = "";
+  ms.forEach(m=>{
+    const date = m[2] ? (wdate(m[1][0], m[1][1])+" ~ "+wdate(m[2][0], m[2][1])) : (wdate(m[1][0], m[1][1])+" 起");
+    const tag = m[4]==="医生建议" ? '<span class="tag ok">医生建议</span>' : (m[4]==="AI推算" ? '<span class="tag warn">AI推算</span>' : '<span class="muted">通用参考</span>');
+    rows += '<tr><td><b>'+m[0]+'</b></td><td>'+date+'</td><td>'+m[3]+'</td><td>'+tag+'</td></tr>';
+  });
+  return '<div class="card"><h2>后续检查里程碑（按孕周推算）</h2>'+
+    '<p class="muted"><b>孕周与预产期口径</b>：末次月经第一天 9.18（晓筠口述）；11.01 彩超报告写「孕约7W」，医生说明数据对得上、但无法保证完全准确，预产期可能较预估往前或往后推 15 天。按 11.01=孕7周0天 推算预产期约 2027年6月20日；按末次月经 9.18 用通用公式（+280天）算约 2027年6月25日（AI计算）。两者接近，综合医生的±15天说法，<b>预产期大致落在 2027年6月上旬~7月上旬</b>。本表各周日期以彩超锚点推算，仅供安排参考，<b>孕周核算与检查预约请以建档医院和医生为准</b>。</p>'+
+    '<div style="overflow-x:auto;"><table><thead><tr><th>孕周</th><th>预计日期</th><th>常规安排（通用参考）</th><th>来源</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="hint">建议：下次检查可直接预约 NT（窗口 11月29日 ~ 12月19日，越早约越好约）；同时可问医生建档医院用无创还是中唐、以及大排畸的预约时间。</div></div>';
+}
+
+/* ================= Tab 4 新增登记 ================= */
+function renderAdd(){
+  renderExtraList();
+}
+function addVisit(){
+  const date=document.getElementById("f_date").value.trim();
+  const org=document.getElementById("f_org").value.trim();
+  const item=document.getElementById("f_item").value.trim();
+  if(!date||!item){ alert("至少填「检查日期」和「检查项目」"); return; }
+  const results=document.getElementById("f_result").value.trim();
+  const ga=document.getElementById("f_ga").value.trim();
+  const note=document.getElementById("f_note").value.trim();
+  const items = results? results.split("\n").map(line=>{
+    const p=line.trim().split(/\s+/);
+    return {cat:item, name:p[0]||line, r:(p[1]||""), u:(p[2]||"—"), ref:"（手工登记）", mark:""};
+  }) : [{cat:item, name:item, r:"—", u:"—", ref:"（手工登记）", mark:""}];
+  EXTRA.push({date, org:org||"（未填机构）", ga, note, manual:true, items});
+  saveExtra(EXTRA);
+  document.getElementById("f_date").value=""; document.getElementById("f_org").value="";
+  document.getElementById("f_item").value=""; document.getElementById("f_result").value="";
+  document.getElementById("f_ga").value=""; document.getElementById("f_note").value="";
+  renderExtraList(); renderOverview();
+  if(document.getElementById("fDate")) renderDetail();
+  alert("已保存，并已同步到「检查总览」「登记明细」。");
+}
+function delExtra(i){ if(confirm("删除这条手工登记？")){ EXTRA.splice(i,1); saveExtra(EXTRA); renderExtraList(); renderOverview(); if(document.getElementById("fDate")) renderDetail(); } }
+function renderExtraList(){
+  const box=document.getElementById("extraList");
+  if(!EXTRA.length){ box.innerHTML='<p class="muted">还没有手工登记的记录。</p>'; return; }
+  box.innerHTML = '<table><thead><tr><th>日期</th><th>机构</th><th>项目</th><th>结果</th><th>操作</th></tr></thead><tbody>'+
+    EXTRA.map((v,i)=>'<tr><td>'+v.date+'</td><td>'+v.org+'</td><td>'+v.items.map(x=>x.cat).join("、")+'</td><td>'+v.items.map(x=>x.name+" "+x.r).join("；")+'</td><td><button class="btn danger" onclick="delExtra('+i+')">删除</button></td></tr>').join("")+
+    '</tbody></table>';
+}
+function exportJSON(){
+  const data = {exportedAt:new Date().toLocaleString(), reports:"内置报告见工具数据段", extra:EXTRA};
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "孕期检查登记备份.json"; a.click();
+}
+function importJSON(input){
+  const f = input.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e=>{
+    try{
+      const d = JSON.parse(e.target.result);
+      if(Array.isArray(d.extra)){ EXTRA = EXTRA.concat(d.extra); saveExtra(EXTRA); renderExtraList(); renderOverview(); alert("导入成功"); }
+      else alert("文件格式不对");
+    }catch(err){ alert("读取失败"); }
+    input.value="";
+  };
+  rd.readAsText(f);
+}
+
+/* ================= Tab 切换 ================= */
+document.querySelectorAll("nav.tabs button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll("section").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    document.getElementById("tab-"+b.dataset.tab).classList.add("on");
+  });
+});
+
+renderOverview(); renderDetail(); renderTrend(); renderAdd();
+</script>
+</body>
+</html>
